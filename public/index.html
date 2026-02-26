@@ -1,1 +1,840 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NXPro5 — Control Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1318;
+    --surface2: #111820;
+    --border: #1e2d3d;
+    --accent: #ff3c3c;
+    --accent2: #ff7a00;
+    --green: #00e676;
+    --yellow: #ffd600;
+    --blue: #29b6f6;
+    --purple: #ce93d8;
+    --text: #ccd6e0;
+    --text-dim: #4a6070;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui: 'Rajdhani', sans-serif;
+    --font-display: 'Orbitron', sans-serif;
+    --glow-red: 0 0 20px rgba(255,60,60,0.4), 0 0 40px rgba(255,60,60,0.2);
+    --glow-green: 0 0 20px rgba(0,230,118,0.4);
+    --glow-orange: 0 0 20px rgba(255,122,0,0.4);
+  }
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 10% 0%, rgba(255,60,60,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(41,182,246,0.04) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(30,45,61,0.15) 40px, rgba(30,45,61,0.15) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(30,45,61,0.15) 40px, rgba(30,45,61,0.15) 41px);
+  }
+
+  /* ── TOP BAR ── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 56px;
+    background: rgba(8,12,16,0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    backdrop-filter: blur(12px);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: var(--glow-red);
+  }
+  .logo span { color: var(--text-dim); font-size: 12px; font-family: var(--font-mono); }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+  #status-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 12px;
+    padding: 6px 14px; border-radius: 4px;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100%{opacity:1} 50%{opacity:0.3}
+  }
+  .conn-indicator {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+  .conn-dot.live { background: var(--green); animation: pulse-dot 1.5s infinite; }
+
+  /* ── AUTH SCREEN ── */
+  #auth-screen {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 24px;
+  }
+  .auth-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    width: 380px;
+    border-radius: 8px;
+    box-shadow: 0 0 60px rgba(255,60,60,0.08);
+  }
+  .auth-title {
+    font-family: var(--font-display);
+    font-size: 20px; letter-spacing: 3px;
+    color: var(--accent); margin-bottom: 8px;
+    text-shadow: var(--glow-red);
+  }
+  .auth-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-bottom: 28px; }
+  .field-label { font-size: 11px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 6px; font-family: var(--font-mono); }
+  .field-input {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 10px 14px; color: var(--text);
+    font-family: var(--font-mono); font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+  .field-input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%; padding: 12px;
+    background: var(--accent); border: none;
+    color: #fff; font-family: var(--font-display);
+    font-size: 13px; letter-spacing: 3px;
+    cursor: pointer; border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: #ff5555; box-shadow: var(--glow-red); }
+  .auth-error { color: var(--accent); font-family: var(--font-mono); font-size: 12px; display: none; margin-top: 10px; }
+
+  /* ── MAIN LAYOUT ── */
+  #app { display: none; padding-top: 56px; min-height: 100vh; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    grid-template-rows: auto 1fr;
+    gap: 1px;
+    background: var(--border);
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: var(--surface);
+    padding: 20px;
+  }
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--text-dim); margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-title::before {
+    content: ''; display: block;
+    width: 3px; height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ── ALARM STATUS ── */
+  .alarm-status-card {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    padding: 24px 32px;
+    display: flex; align-items: center; gap: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    border: 2px solid var(--border);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .status-info h2 {
+    font-family: var(--font-display);
+    font-size: 22px; letter-spacing: 3px;
+    transition: color 0.3s;
+  }
+  .status-info p {
+    font-family: var(--font-mono);
+    font-size: 12px; color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .last-cmd {
+    margin-left: auto; text-align: right;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Status color states */
+  body.state-normal .status-icon { border-color: var(--green); background: rgba(0,230,118,0.06); box-shadow: var(--glow-green); }
+  body.state-normal .status-info h2 { color: var(--green); }
+  body.state-normal .status-dot { background: var(--green); }
+
+  body.state-evacuate .status-icon,
+  body.state-alarm .status-icon { border-color: var(--accent); background: rgba(255,60,60,0.08); box-shadow: var(--glow-red); animation: flicker 0.8s infinite; }
+  body.state-evacuate .status-info h2,
+  body.state-alarm .status-info h2 { color: var(--accent); animation: flicker-text 0.8s infinite; }
+  body.state-evacuate .status-dot { background: var(--accent); }
+
+  body.state-trouble .status-icon { border-color: var(--accent2); background: rgba(255,122,0,0.08); box-shadow: var(--glow-orange); }
+  body.state-trouble .status-info h2 { color: var(--accent2); }
+  body.state-trouble .status-dot { background: var(--accent2); }
+
+  body.state-classchange .status-icon { border-color: var(--yellow); background: rgba(255,214,0,0.06); }
+  body.state-classchange .status-info h2 { color: var(--yellow); }
+
+  body.state-silenced .status-icon { border-color: var(--blue); background: rgba(41,182,246,0.06); }
+  body.state-silenced .status-info h2 { color: var(--blue); }
+
+  @keyframes flicker {
+    0%,100%{opacity:1} 50%{opacity:0.7}
+  }
+  @keyframes flicker-text {
+    0%,100%{opacity:1;text-shadow:var(--glow-red)} 50%{opacity:0.6;text-shadow:none}
+  }
+
+  /* ── CONTROL BUTTONS ── */
+  .controls-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ctrl-btn {
+    padding: 14px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 11px; letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+  }
+  .ctrl-btn .icon { font-size: 22px; }
+  .ctrl-btn:hover { transform: translateY(-2px); }
+  .ctrl-btn.evacuate { border-color: rgba(255,60,60,0.4); }
+  .ctrl-btn.evacuate:hover { background: rgba(255,60,60,0.12); border-color: var(--accent); box-shadow: var(--glow-red); color: var(--accent); }
+  .ctrl-btn.trouble { border-color: rgba(255,122,0,0.4); }
+  .ctrl-btn.trouble:hover { background: rgba(255,122,0,0.12); border-color: var(--accent2); box-shadow: var(--glow-orange); color: var(--accent2); }
+  .ctrl-btn.classchange { border-color: rgba(255,214,0,0.3); }
+  .ctrl-btn.classchange:hover { background: rgba(255,214,0,0.08); border-color: var(--yellow); color: var(--yellow); }
+  .ctrl-btn.silence { border-color: rgba(41,182,246,0.3); }
+  .ctrl-btn.silence:hover { background: rgba(41,182,246,0.08); border-color: var(--blue); color: var(--blue); }
+  .ctrl-btn.reset { grid-column: 1/-1; border-color: rgba(0,230,118,0.3); }
+  .ctrl-btn.reset:hover { background: rgba(0,230,118,0.08); border-color: var(--green); box-shadow: var(--glow-green); color: var(--green); }
+  .ctrl-btn.alarm { border-color: rgba(206,147,216,0.3); }
+  .ctrl-btn.alarm:hover { background: rgba(206,147,216,0.08); border-color: var(--purple); color: var(--purple); }
+
+  /* ── ZONE SELECTOR for targeted commands ── */
+  .zone-select {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 8px 12px; color: var(--text);
+    font-family: var(--font-mono); font-size: 12px;
+    outline: none; margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .zone-select:focus { border-color: var(--accent); }
+
+  /* ── ZONES GRID ── */
+  .zones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .zone-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .zone-card .zone-num {
+    font-family: var(--font-display); font-size: 11px;
+    color: var(--text-dim); letter-spacing: 2px;
+  }
+  .zone-card .zone-name {
+    font-size: 13px; font-weight: 600;
+    margin-top: 2px; margin-bottom: 6px;
+  }
+  .zone-card .zone-status {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--green);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .zone-card .zone-status::before { content: '●'; font-size: 8px; }
+  .zone-card.state-evacuate,
+  .zone-card.state-alarm { border-color: rgba(255,60,60,0.5); background: rgba(255,60,60,0.05); }
+  .zone-card.state-evacuate .zone-status,
+  .zone-card.state-alarm .zone-status { color: var(--accent); animation: flicker-text 0.8s infinite; }
+  .zone-card.state-trouble { border-color: rgba(255,122,0,0.5); }
+  .zone-card.state-trouble .zone-status { color: var(--accent2); }
+  .zone-card.state-classchange { border-color: rgba(255,214,0,0.4); }
+  .zone-card.state-classchange .zone-status { color: var(--yellow); }
+
+  /* ── EVENT LOG ── */
+  .event-log {
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 400px; overflow-y: auto;
+  }
+  .event-log::-webkit-scrollbar { width: 4px; }
+  .event-log::-webkit-scrollbar-track { background: transparent; }
+  .event-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .event-entry {
+    background: var(--surface2);
+    border-left: 3px solid var(--border);
+    padding: 8px 10px;
+    border-radius: 0 4px 4px 0;
+    animation: slide-in 0.3s ease;
+  }
+  @keyframes slide-in { from{transform:translateX(-8px);opacity:0} to{transform:none;opacity:1} }
+  .event-entry .evt-time { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+  .event-entry .evt-msg { font-size: 12px; margin-top: 2px; }
+  .event-entry.evacuate,.event-entry.alarm { border-left-color: var(--accent); }
+  .event-entry.trouble { border-left-color: var(--accent2); }
+  .event-entry.classchange { border-left-color: var(--yellow); }
+  .event-entry.silence { border-left-color: var(--blue); }
+  .event-entry.reset { border-left-color: var(--green); }
+  .event-entry.timed_event { border-left-color: var(--purple); }
+
+  /* ── TIMED EVENTS ── */
+  .timed-event-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .timed-event-item .te-info { flex: 1; }
+  .timed-event-item .te-name { font-weight: 600; font-size: 13px; }
+  .timed-event-item .te-details { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .te-cmd-badge {
+    font-family: var(--font-mono); font-size: 10px;
+    padding: 3px 8px; border-radius: 3px;
+    background: rgba(255,60,60,0.1); color: var(--accent);
+    border: 1px solid rgba(255,60,60,0.2);
+  }
+  .te-delete {
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    padding: 4px 8px; border-radius: 4px;
+    font-size: 12px; transition: all 0.15s;
+  }
+  .te-delete:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── ADD TIMED EVENT FORM ── */
+  .add-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .add-form input {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 8px 12px; color: var(--text);
+    font-family: var(--font-mono); font-size: 12px;
+    outline: none;
+  }
+  .add-form input:focus { border-color: var(--accent); }
+  .add-form select {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 8px 12px; color: var(--text);
+    font-family: var(--font-mono); font-size: 12px;
+    outline: none;
+  }
+  .btn-sm {
+    padding: 8px 16px; background: rgba(255,60,60,0.12);
+    border: 1px solid rgba(255,60,60,0.3);
+    color: var(--accent); border-radius: 4px;
+    font-family: var(--font-display); font-size: 11px;
+    letter-spacing: 2px; cursor: pointer;
+    transition: all 0.15s;
+    align-self: flex-end;
+  }
+  .btn-sm:hover { background: rgba(255,60,60,0.2); box-shadow: var(--glow-red); }
+
+  /* ── CONFIRM MODAL ── */
+  #confirm-modal {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(8,12,16,0.85); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center;
+  }
+  #confirm-modal.open { display: flex; }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px 36px; border-radius: 8px;
+    width: 340px; text-align: center;
+    box-shadow: 0 0 60px rgba(255,60,60,0.15);
+  }
+  .modal-icon { font-size: 40px; margin-bottom: 12px; }
+  .modal-title {
+    font-family: var(--font-display); font-size: 16px;
+    letter-spacing: 3px; color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .modal-msg { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); margin-bottom: 24px; }
+  .modal-btns { display: flex; gap: 10px; justify-content: center; }
+  .btn-cancel {
+    padding: 10px 24px; background: var(--surface2);
+    border: 1px solid var(--border); color: var(--text);
+    border-radius: 4px; cursor: pointer; font-family: var(--font-ui);
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { border-color: var(--text-dim); }
+  .btn-confirm {
+    padding: 10px 24px;
+    background: var(--accent); border: none;
+    color: #fff; border-radius: 4px;
+    cursor: pointer; font-family: var(--font-display);
+    font-size: 12px; letter-spacing: 2px;
+    transition: all 0.15s;
+  }
+  .btn-confirm:hover { background: #ff5555; box-shadow: var(--glow-red); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid var(--green);
+    color: var(--green); padding: 12px 20px;
+    border-radius: 6px; font-family: var(--font-mono); font-size: 12px;
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.25s; pointer-events: none;
+    box-shadow: var(--glow-green);
+    z-index: 400;
+  }
+  #toast.show { opacity: 1; transform: none; }
+  #toast.error { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow-red); }
+
+  /* ── SCAN ANIMATION on status card ── */
+  .scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,60,60,0.3), transparent);
+    animation: scan 3s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes scan { from{top:56px} to{top:100vh} }
+
+  /* ── RESPONSIVE tweaks ── */
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr 1fr; }
+    .alarm-status-card { grid-column: 1/-1; }
+  }
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .separator { height: 1px; background: var(--border); margin: 16px 0; }
+  .small-label { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 1px; }
+</style>
+</head>
+<body class="state-normal">
+
+<div class="scan-line"></div>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-title">NXPro5</div>
+    <div class="auth-sub">// FIRE ALARM CONTROL PANEL — AUTHENTICATION REQUIRED</div>
+    <div class="field-label">SERVER URL</div>
+    <input class="field-input" id="server-url" type="text" placeholder="https://your-app.onrender.com" value="">
+    <div class="field-label">API KEY</div>
+    <input class="field-input" id="api-key" type="password" placeholder="••••••••••••">
+    <button class="btn-primary" onclick="authenticate()">CONNECT</button>
+    <div class="auth-error" id="auth-error">⚠ Authentication failed. Check URL and API key.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="logo">NXPro5 <span>// FIRE CONTROL</span></div>
+    <div class="header-right">
+      <div id="status-badge">
+        <div class="status-dot"></div>
+        <span id="status-text">NORMAL</span>
+      </div>
+      <div class="conn-indicator">
+        <div class="conn-dot" id="conn-dot"></div>
+        <span id="conn-text">CONNECTING</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- STATUS BAR full width -->
+    <div class="alarm-status-card">
+      <div class="status-icon" id="status-icon">🟢</div>
+      <div class="status-info">
+        <h2 id="main-status-text">SYSTEM NORMAL</h2>
+        <p id="main-status-sub">All zones operational — No active alarms</p>
+      </div>
+      <div class="last-cmd">
+        <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px">LAST COMMAND</div>
+        <div id="last-cmd-text" style="font-family:var(--font-mono);font-size:12px;margin-top:4px">—</div>
+        <div id="last-cmd-time" style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-top:2px">—</div>
+      </div>
+    </div>
+
+    <!-- LEFT: CONTROLS -->
+    <div class="panel">
+      <div class="panel-title">ALARM CONTROLS</div>
+
+      <div class="small-label">TARGET ZONE (optional)</div>
+      <select class="zone-select" id="target-zone">
+        <option value="">All zones</option>
+        <option value="1">Zone 1 — Reception</option>
+        <option value="2">Zone 2 — Waiting Room</option>
+        <option value="3">Zone 3 — Staff Room</option>
+        <option value="4">Zone 4 — Basement</option>
+        <option value="5">Zone 5 — Office 1</option>
+        <option value="6">Zone 6 — Office 2</option>
+      </select>
+
+      <div class="controls-grid">
+        <button class="ctrl-btn evacuate" onclick="confirmCommand('Evacuate','🚨','Launch EVACUATION alarm?')">
+          <span class="icon">🚨</span>EVACUATE
+        </button>
+        <button class="ctrl-btn trouble" onclick="confirmCommand('Trouble','⚠️','Trigger TROUBLE condition?')">
+          <span class="icon">⚠️</span>TROUBLE
+        </button>
+        <button class="ctrl-btn classchange" onclick="confirmCommand('ClassChange','🔔','Trigger CLASS CHANGE?')">
+          <span class="icon">🔔</span>CLASS CHANGE
+        </button>
+        <button class="ctrl-btn alarm" onclick="confirmCommand('Alarm','🔴','Trigger ALARM condition?')">
+          <span class="icon">🔴</span>ALARM
+        </button>
+        <button class="ctrl-btn silence" onclick="confirmCommand('Silence','🔇','SILENCE the alarm?')">
+          <span class="icon">🔇</span>SILENCE
+        </button>
+        <button class="ctrl-btn reset" onclick="confirmCommand('Reset','✅','RESET the entire system?')">
+          <span class="icon">✅</span>FULL RESET
+        </button>
+      </div>
+    </div>
+
+    <!-- CENTER: ZONES + TIMED EVENTS -->
+    <div class="panel" style="grid-row: span 2; overflow-y:auto">
+      <div class="panel-title">ZONE STATUS</div>
+      <div class="zones-grid" id="zones-grid">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="separator"></div>
+
+      <div class="panel-title">TIMED EVENTS</div>
+      <div id="timed-events-list"></div>
+
+      <details style="margin-top:8px">
+        <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);padding:8px 0">
+          + ADD TIMED EVENT
+        </summary>
+        <div class="add-form">
+          <input id="te-name" placeholder="Event name" />
+          <input id="te-date" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" />
+          <input id="te-time" placeholder="HH:MM:SS" pattern="\d{2}:\d{2}:\d{2}" />
+          <select id="te-cmd">
+            <option value="Evacuate">Evacuate</option>
+            <option value="Trouble">Trouble</option>
+            <option value="ClassChange">ClassChange</option>
+            <option value="Alarm">Alarm</option>
+            <option value="Silence">Silence</option>
+            <option value="Reset">Reset</option>
+          </select>
+          <button class="btn-sm" onclick="addTimedEvent()">ADD EVENT →</button>
+        </div>
+      </details>
+    </div>
+
+    <!-- RIGHT: EVENT LOG -->
+    <div class="panel" style="grid-row: span 2; overflow-y:auto">
+      <div class="panel-title">EVENT LOG</div>
+      <div class="event-log" id="event-log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">⚠️</div>
+    <div class="modal-title" id="modal-title">CONFIRM ACTION</div>
+    <div class="modal-msg" id="modal-msg">Are you sure?</div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">CANCEL</button>
+      <button class="btn-confirm" onclick="executeConfirmed()">CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+let API_BASE = '';
+let API_KEY = '';
+let pendingCmd = null;
+let pollInterval = null;
+
+const STATUS_META = {
+  normal:      { text: 'SYSTEM NORMAL',     sub: 'All zones operational — No active alarms', icon: '🟢', cls: 'state-normal' },
+  evacuate:    { text: 'EVACUATION ACTIVE',  sub: '⚠ Fire condition detected — Evacuate immediately', icon: '🚨', cls: 'state-evacuate' },
+  trouble:     { text: 'TROUBLE CONDITION',  sub: 'System fault detected', icon: '⚠️', cls: 'state-trouble' },
+  classchange: { text: 'CLASS CHANGE',       sub: 'Class change signal active', icon: '🔔', cls: 'state-classchange' },
+  alarm:       { text: 'ALARM ACTIVE',       sub: 'Alarm condition triggered', icon: '🔴', cls: 'state-alarm' },
+  silenced:    { text: 'ALARM SILENCED',     sub: 'Alarm silenced — awaiting reset', icon: '🔇', cls: 'state-silenced' },
+};
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function authenticate() {
+  const url = document.getElementById('server-url').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('api-key').value.trim();
+  if (!url || !key) { showAuthError('Fill in URL and API key.'); return; }
+
+  try {
+    const r = await fetch(`${url}/api/state`, { headers: { 'x-api-key': key } });
+    if (!r.ok) throw new Error('Unauthorized');
+    API_BASE = url;
+    API_KEY = key;
+    localStorage.setItem('nxpro_url', url);
+    localStorage.setItem('nxpro_key', key);
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    const data = await r.json();
+    applyState(data);
+    startPolling();
+  } catch(e) {
+    showAuthError('Authentication failed. Check URL and API key.');
+  }
+}
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+// Auto-restore session
+window.addEventListener('DOMContentLoaded', () => {
+  const url = localStorage.getItem('nxpro_url');
+  const key = localStorage.getItem('nxpro_key');
+  if (url) document.getElementById('server-url').value = url;
+  if (key) document.getElementById('api-key').value = key;
+});
+
+// ── POLLING ───────────────────────────────────────────────────────────────────
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollState();
+  pollInterval = setInterval(pollState, 3000);
+}
+
+async function pollState() {
+  try {
+    const r = await fetch(`${API_BASE}/api/state`, { headers: { 'x-api-key': API_KEY } });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    applyState(data);
+    setConnected(true);
+  } catch(e) {
+    setConnected(false);
+  }
+}
+
+function setConnected(ok) {
+  const dot = document.getElementById('conn-dot');
+  const txt = document.getElementById('conn-text');
+  dot.className = 'conn-dot' + (ok ? ' live' : '');
+  txt.textContent = ok ? 'LIVE' : 'DISCONNECTED';
+}
+
+// ── STATE APPLICATION ─────────────────────────────────────────────────────────
+function applyState(data) {
+  const st = data.status || 'normal';
+  const meta = STATUS_META[st] || STATUS_META.normal;
+
+  // Remove old state classes
+  document.body.className = '';
+  document.body.classList.add(meta.cls);
+
+  document.getElementById('status-icon').textContent = meta.icon;
+  document.getElementById('main-status-text').textContent = meta.text;
+  document.getElementById('main-status-sub').textContent = meta.sub;
+  document.getElementById('status-text').textContent = st.toUpperCase();
+
+  if (data.lastCommand) {
+    document.getElementById('last-cmd-text').textContent = data.lastCommand;
+    document.getElementById('last-cmd-time').textContent = data.lastCommandTime ? new Date(data.lastCommandTime).toLocaleTimeString() : '';
+  }
+
+  // Zones
+  if (data.zones) renderZones(data.zones);
+
+  // Events
+  if (data.events) renderEvents(data.events);
+
+  // Timed events
+  if (data.timedEvents !== undefined) renderTimedEvents(data.timedEvents);
+}
+
+function renderZones(zones) {
+  const grid = document.getElementById('zones-grid');
+  grid.innerHTML = '';
+  Object.entries(zones).forEach(([id, z]) => {
+    const div = document.createElement('div');
+    div.className = 'zone-card state-' + (z.status || 'normal');
+    div.innerHTML = `
+      <div class="zone-num">ZONE ${id}</div>
+      <div class="zone-name">${z.name}</div>
+      <div class="zone-status">${(z.status||'normal').toUpperCase()}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function renderEvents(events) {
+  const log = document.getElementById('event-log');
+  log.innerHTML = '';
+  events.forEach(ev => {
+    const div = document.createElement('div');
+    div.className = 'event-entry ' + (ev.type || '');
+    const time = new Date(ev.time).toLocaleTimeString();
+    div.innerHTML = `<div class="evt-time">${time}</div><div class="evt-msg">${ev.message}</div>`;
+    log.appendChild(div);
+  });
+}
+
+function renderTimedEvents(list) {
+  const el = document.getElementById('timed-events-list');
+  el.innerHTML = '';
+  if (!list.length) {
+    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);padding:8px 0">No timed events configured.</div>';
+    return;
+  }
+  list.forEach(ev => {
+    const div = document.createElement('div');
+    div.className = 'timed-event-item';
+    div.innerHTML = `
+      <div class="te-info">
+        <div class="te-name">${ev.name}</div>
+        <div class="te-details">${ev.date} @ ${ev.time}</div>
+      </div>
+      <span class="te-cmd-badge">${ev.command}</span>
+      <button class="te-delete" onclick="deleteTimedEvent(${ev.id})">✕</button>
+    `;
+    el.appendChild(div);
+  });
+}
+
+// ── COMMANDS ──────────────────────────────────────────────────────────────────
+function confirmCommand(command, icon, msg) {
+  pendingCmd = command;
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = command.toUpperCase();
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+  pendingCmd = null;
+}
+async function executeConfirmed() {
+  closeModal();
+  if (!pendingCmd) return;
+  const zone = document.getElementById('target-zone').value || null;
+  await sendCommand(pendingCmd, zone);
+}
+async function sendCommand(command, zone) {
+  try {
+    const r = await fetch(`${API_BASE}/api/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+      body: JSON.stringify({ command, zone })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      showToast(`✓ ${command} sent${zone ? ` → Zone ${zone}` : ''}`, false);
+      pollState();
+    } else {
+      showToast('✗ Command failed', true);
+    }
+  } catch(e) {
+    showToast('✗ Network error', true);
+  }
+}
+
+// ── TIMED EVENTS ─────────────────────────────────────────────────────────────
+async function addTimedEvent() {
+  const name = document.getElementById('te-name').value.trim();
+  const date = document.getElementById('te-date').value.trim();
+  const time = document.getElementById('te-time').value.trim();
+  const command = document.getElementById('te-cmd').value;
+  if (!name || !date || !time) { showToast('✗ Fill all fields', true); return; }
+  const dateReg = /^\d{2}\/\d{2}\/\d{4}$/;
+  const timeReg = /^\d{2}:\d{2}:\d{2}$/;
+  if (!dateReg.test(date) || !timeReg.test(time)) { showToast('✗ Invalid date/time format', true); return; }
+
+  const r = await fetch(`${API_BASE}/api/timed-events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+    body: JSON.stringify({ name, date, time, command })
+  });
+  const data = await r.json();
+  if (data.id) {
+    showToast('✓ Timed event added');
+    document.getElementById('te-name').value = '';
+    document.getElementById('te-date').value = '';
+    document.getElementById('te-time').value = '';
+    pollState();
+  } else { showToast('✗ Failed to add event', true); }
+}
+
+async function deleteTimedEvent(id) {
+  const r = await fetch(`${API_BASE}/api/timed-events/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-api-key': API_KEY }
+  });
+  const data = await r.json();
+  if (data.ok) { showToast('✓ Event deleted'); pollState(); }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = '', 3000);
+}
+
+// Close modal on backdrop click
+document.getElementById('confirm-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+</script>
+</body>
+</html>
