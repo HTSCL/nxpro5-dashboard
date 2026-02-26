@@ -1,5 +1,5 @@
 {
-  "name": "nxpro-dashboard",
+  "name": "nxpro5-dashboard",
   "version": "1.0.0",
   "description": "NXPro5 Fire Alarm Control Dashboard",
   "main": "server.js",
