@@ -1,1 +1,13 @@
-
+services:
+  - type: web
+    name: nxpro5-dashboard
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: API_KEY
+        generateValue: false   # set manually in Render dashboard
+      - key: ROBLOX_KEY
+        generateValue: false   # set manually in Render dashboard
+      - key: PORT
+        value: 3000
